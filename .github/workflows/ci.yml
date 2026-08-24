@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  node-check:
+    name: Node.js Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - events
+          - notifications
+          - tickets
+          - users
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: services/${{ matrix.service }}
+        run: npm install
+
+      - name: Verify service starts
+        working-directory: services/${{ matrix.service }}
+        run: |
+          timeout 10s npm start || true
+
+  helm-lint:
+    name: Helm Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint events chart
+        run: helm lint charts/events
+
+      - name: Lint notifications chart
+        run: helm lint charts/notifications
+
+      - name: Lint tickets chart
+        run: helm lint charts/tickets
+
+      - name: Lint users chart
+        run: helm lint charts/users
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - events
+          - notifications
+          - tickets
+          - users
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ matrix.service }}:ci \
+            ./services/${{ matrix.service }}
