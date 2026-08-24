@@ -1,5 +1,6 @@
-replicaCount: 1
-
+replicaCount: 2
+maxUnavailable: 0
+maxSurge: 1
 image:
   repository: users
   tag: "1.0"
