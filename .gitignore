@@ -4,3 +4,5 @@ package-lock.json
 
 # Private keys
 *.key
+*.key.b64
+tmp/
