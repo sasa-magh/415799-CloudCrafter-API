@@ -1,0 +1,48 @@
+```yaml
+server:
+  persistentVolume:
+    enabled: false
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  retention: 6h
+
+  service:
+    type: ClusterIP
+
+# We manage scrape_configs ourselves below.
+scrapeConfigs: null
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: false
+
+pushgateway:
+  enabled: false
+
+serverFiles:
+  prometheus.yml:
+    scrape_configs:
+      - job_name: cloudcrafter-pods
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+
+      - job_name: cloudcrafter-services
+        kubernetes_sd_configs:
+          - role: service
+```
